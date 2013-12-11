@@ -4,7 +4,8 @@ import SortFile
 
 
 '''
-Created on 28.08.2012
+Created on 11.12.2013
+New Microarray files
 @author: Axel Wilbertz
 '''
 from test.test_argparse import WFile
