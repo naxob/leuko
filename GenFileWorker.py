@@ -1,6 +1,8 @@
 import sets
 import os
 import SortFile
+import numpy as np
+from scipy import stats
 
 
 '''
@@ -158,11 +160,14 @@ def writelist(list, filepath,linecount, filesep,addnewline):
 @param gensep:delimiter for multiple genes in one column
 @param linecount:set 0 for end of file 
 """
-def expand_and_delete(flist, genpos, gensep):
+def expand_and_delete(filepatha,filepathb,delimitera, genpos, gensep):
     print '\nexpanding and delete'
-    temparray = []
+    o = open(filepatha,'r')
+    n = open (filepathb,'w')
     i = 0
-    for line in flist:        
+    for line in o:
+        line = line.split(delimitera)
+        line[genpos] = line[genpos].replace('"','')
         if line[genpos].count(gensep) >= 1 :
             temp_dup = line[genpos].split(gensep)
             tempc=[]
@@ -172,7 +177,7 @@ def expand_and_delete(flist, genpos, gensep):
             temp_nodup = list(sets.Set(tempc))   
             if len(temp_nodup) == 1 :
                 line[genpos] = temp_nodup.pop()
-                temparray.append(line)
+                n.write(delimitera.join(line))
             else :
                 
                 for elem in temp_nodup :
@@ -180,15 +185,16 @@ def expand_and_delete(flist, genpos, gensep):
                     #auf grund nebenlaeufigkeit muss diese neuberechnung erfolgen
                     temp = ','.join(line)
                     tempn = temp.split(',')
-                    temparray.append(tempn)
+                    n.write(delimitera.join(tempn))
         else :
-            line[genpos]=line[genpos].strip()
-            temparray.append(line)   
+            if line[genpos] != '':
+                line[genpos]=line[genpos].strip()
+                n.write(delimitera.join(line))
         i += 1
         
-    print '\twrote ' + str(len(temparray)) + ' lines\n...expand_and_delete done\n'
+    print '\twrote lines\n...expand_and_delete done\n'
     
-    return temparray
+    return
 
 def listtodict(array, genpos):
     print '\nlist to dict started...'
@@ -303,11 +309,7 @@ def appendcolbyfile(filepatha, filepathb, cola, colb, genpos,newfile):
                     linea='\t'.join(linea).replace('\n','').split('\t')                   
                     linea.extend(d.get(linea[cola])) 
                
-                    #linea = striparray(linea,1)   
-                    """
-                    pos = findvalinarray(linea,'\n')
-                    linea = replaceinarray(linea, pos, '\n')
-                    """
+                    #linea = striparray(linea,1)
                     linea[len(linea)-1] += '\n'
                       
                     filenew.write('\t'.join(linea))
@@ -466,26 +468,6 @@ def sortfilestream(oldfile,writefile,delimiter,sortlist):
     print 'done'
     return
 
-def shortentitle():
-    """
-    file = open('CD71GenexpressionsrohdatenNEUGENERIERT.TXT','r')
-    filenew = open('CD71GenexpressionsrohdatenNEUGENERIERT_2.TXT','w')
-    temp = file.readline()
-    temp = temp.split('\t')
-    print temp
-    for i in range(len(temp)):
-        temp[i] = temp[i].replace(' test_(HuEx-1_0-st-v2).rma-exon-all-dabg-Signal','')
-        temp[i] = temp[i].replace(' test_(HuEx-1_0-st-v2).rma-exon-all-dabg-Detection ','')
-        temp[i] = temp[i].replace('_(HuEx-1_0-st-v2).rma-exon-all-dabg-Signal','')        
-        temp[i] = temp[i].replace('_(HuEx-1_0-st-v2).rma-exon-all-dabg-Detection ','')
-        print temp[i]    
-    temp = '\t'.join(temp)
-    print temp
-    filenew.write(temp)
-    for line in file:
-        filenew.write(line)
-    """  
-    return
 
 def sortgenexpr():
     """
@@ -513,6 +495,7 @@ def sortgenexpr():
     """
     @warning: chromosome col must be like chr01 not chr1 and must be sorted by chromosome and start
     """
+
 def fillemptygenes(patha,pathb,pathw,colposa,colposb,repval,delimitera,delimiterb):
     filea = open(patha,'r')
     fileb = open(pathb,'r')
@@ -528,8 +511,11 @@ def fillemptygenes(patha,pathb,pathw,colposa,colposb,repval,delimitera,delimiter
     for linea in filea:        
         wrote = []      
         linea = linea.split(delimitera)
-        #print 'a '+str(a)+' '+linea[colposa[1]]+' '+linea[colposa[2]]+'\nb '+str(int(pos[0]))+' '+lineb[colposb[1]]+' '+lineb[colposb[2]]+' '+lineb[colposb[3]]+'\n'        
-        #if (a > 80):break                
+        print 'a '+str(a)+' '+linea[colposa[1]]+' '+linea[colposa[2]]+'\nb '+str(int(pos[0]))+' '+lineb[colposb[1]]+' '+lineb[colposb[2]]+' '+lineb[colposb[3]]+'\n'
+        #colposa = getgenpos('2014/sampleRohdatenGENE-CORE(65)linear.RMA-GENE-CORE-Group2log2SORT.tsv',['Gene Symbol','Chromosome','Start'],'\t')
+        #colposb = getgenpos('2014/refGeneSorted.tsv',['name2','chrom','txStart','txEnd'],'\t')
+
+        #if (a > 80):break
         if linea[colposa[0]] == repval:    
             # chr a gleich chr b
             if newstart:
@@ -538,8 +524,10 @@ def fillemptygenes(patha,pathb,pathw,colposa,colposb,repval,delimitera,delimiter
                 lineb = fileb.readline().split(delimiterb)
                 newstart = 0           
             if linea[colposa[1]] == lineb[colposb[1]]:
+                #print 'a '+str(a)+' '+linea[colposa[1]]+' '+linea[colposa[2]]+'\nb '+str(int(pos[0]))+' '+lineb[colposb[1]]+' '+lineb[colposb[2]]+' '+lineb[colposb[3]]+'\n'
+
                 # so lange start > txstart
-                while int(linea[colposa[2]]) >= int(lineb[colposb[2]]):     
+                while int(linea[colposa[2]]) >= int(lineb[colposb[2]]):
                     # falls chr a > chr b break , nextline in b               
                     if linea[colposa[1]] < lineb[colposb[1]]:
                         break
@@ -599,7 +587,7 @@ def fillemptygenes(patha,pathb,pathw,colposa,colposb,repval,delimitera,delimiter
     filew.close()
     return
 
-def fillemptygenescreatefiles(patha,pathb,pathw,colposa,colposb,repval,delimitera,delimiterb):
+def fillemptygenescreatefiles(patha,pathb,chrompos,genepos,repval,delimitera):
     filea = open(patha,'r')
     fileb = open(pathb,'r')
     pos = 0
@@ -609,8 +597,8 @@ def fillemptygenescreatefiles(patha,pathb,pathw,colposa,colposb,repval,delimiter
     chromlist = []
     for linea in filea:
         linea = linea.split(delimitera)
-        if linea[colposa[1]] not in chromlist:
-            chromlist.append(linea[colposa[1]])
+        if linea[chrompos] not in chromlist:
+            chromlist.append(linea[chrompos])
     filenamelist = [] 
     print chromlist 
     filea.seek(0)
@@ -625,9 +613,9 @@ def fillemptygenescreatefiles(patha,pathb,pathw,colposa,colposb,repval,delimiter
         for linea in filea:               
                
             linea=linea.split(delimitera)
-            if linea[colposa[0]] == repval and linea[colposa[1]] == chr:
+            if linea[genepos] == repval and linea[chrompos] == chr:
                 filew.write(delimitera.join(linea))
-            if linea[colposa[1]] > chr:
+            if linea[chrompos] > chr:
                 break            
         filew.close()
         print filename +' closed'
@@ -689,7 +677,6 @@ def calcmean(line,pos):
     except ZeroDivisionError:
         print 'division by zero mean set to 0'
         return 0
-    
     
 
 def addcalcmean(rpath,wpath,delimiter,m1pos,m2pos,m3pos,m4pos):
@@ -766,6 +753,16 @@ def addcalcdiff(rpath,wpath,delimiter,mpos,coltitle):
     wfile.close()
     print 'addcalcdiff ended...'
     return
+
+def countvalue(path,delimiter,value,pos):
+    f = open(path,'r')
+    i = 0
+    for line in f:
+        line = line.split(delimiter)
+        if line[pos] == value:
+            i=i+1
+    f.close()
+    return i
 
 
 def runit():
@@ -846,17 +843,16 @@ def runit():
 
     return
 
-if __name__ == '__main__':   
-    #taketime(runit, 1)
+def oldcalc():
     """
     m1pos=getgenpos('kombinationenMethrohGenexprohCor.tsv',['0940_08.AVG_Beta','0865_08.AVG_Beta','0944_08.AVG_Beta','0861_08.AVG_Beta','0952_08.AVG_Beta','0980_08.AVG_Beta','1062_08.AVG_Beta','1079_08.AVG_Beta','1307_09.AVG_Beta'],'\t')
     m2pos=getgenpos('kombinationenMethrohGenexprohCor.tsv',['n0315_09.AVG_Beta','n0321_09.AVG_Beta','n0327_09.AVG_Beta','n0303_09.AVG_Beta','n0309_09.AVG_Beta'],'\t')
     m3pos=getgenpos('kombinationenMethrohGenexprohCor.tsv',['0940-08','0856-08','6_0944-08','3_0861-08','0952-08','0980-08','1062-08','1079-08','1307-09'],'\t')
     m4pos=getgenpos('kombinationenMethrohGenexprohCor.tsv',['9_0315-09','10_0321-09','11_0327-09','7_0303-09','8_0309-09'],'\t')
-    headtitle = ['MeanBetaMDS','MeanBetaHealthy','MeanExpMDS','MeanExpHealthy']      
-    #headtitle = ['MeanBetaMDS','MeanBetaHealthy','MeanExpMDS','MeanExpHealthy\n']   
+    headtitle = ['MeanBetaMDS','MeanBetaHealthy','MeanExpMDS','MeanExpHealthy']
+    #headtitle = ['MeanBetaMDS','MeanBetaHealthy','MeanExpMDS','MeanExpHealthy\n']
     addcalcmean2('kombinationenMethrohGenexprohCor.tsv','kombinationenMethrohGenexprohCorMean.tsv','\t',[m1pos, m2pos, m3pos, m4pos],headtitle)
-   
+
     m1pos=getgenpos('kombinationenMethrohGenexprohCorMean.tsv','MeanBetaMDS','\t')
     m2pos=getgenpos('kombinationenMethrohGenexprohCorMean.tsv','MeanBetaHealthy','\t')
     m3pos=getgenpos('kombinationenMethrohGenexprohCorMean.tsv','MeanExpMDS','\t')
@@ -870,17 +866,43 @@ if __name__ == '__main__':
     #SortFile.main('test/CD71GenexprAnnoNRoh_small.tsv','test/CD71GenexprAnnoNRoh_small.tsv','str(line.split("\t")[1])',128000)
     #print getgenpos('corgr0.4.tsv','Cor','\t')
     #SortFile.main('corgr0.4.tsv','corgr0.4sort.tsv','abs(float(line.split("\t")[68]))',128000)
-    f = open('corgr0.4sort.tsv','r')
-    f2 = open('corgr0.4sortTop.tsv','w')
-    i=0
-    for line in f:
-        i=i+1
-        if i>892000:
-            print line
-            f2.write(line)
-    print i
-    f.close()
-    f2.close()
 
+def newcalc():
+    #merge new meth microarray files with old microarray files - do it bot ways to ensure max overlap
+    #appendcolbyfile('2014/CD71Methyrohdaten_TargetIDsortedALT.txt','2014/131203_Meth125_Mossner_SampleMethylationProfile_all_AnnoSort.tsv', 1, 0, 3,'2014/methmatch1.tsv')
+    #appendcolbyfile('2014/131203_Meth125_Mossner_SampleMethylationProfile_all_AnnoSort.tsv','2014/CD71Methyrohdaten_TargetIDsortedALT.txt', 0, 1, 3,'2014/methmatch2.tsv')
+    return
 
+def calccornew():
+    zu = open('2014/zuordnungFuerKorrelation.txt','r')
+    zu.readline()
+    zu.readline()
+    exp = zu.readline().strip().split('\t')
+    meth = zu.readline().strip().split('\t')
+    zu.close()
+    o = open('2014/Cor_CD71MethExpCore.tsv','r')
+    n = open('2014/Cor_CD71MethExpCore_R.tsv','w')
+    n.write(o.readline().strip()+'\tCor\tCor_PValue\n')
+    for line in o:
+        try:
+            line = line.strip().split('\t')
+            x = []
+            y=[]
+            for v in exp:
+                x.append(float(line[int(v)]))
+            for v in meth:
+                y.append(float(line[int(v)]))
+
+            temp = stats.pearsonr(x, y)
+            line.append(str(temp[0]))
+            line.append(str(temp[1]))
+            n.write('\t'.join(line)+'\n')
+        except ValueError:
+            continue
+
+    o.close()
+    n.close()
+
+if __name__ == '__main__':
+    #taketime(runit, 1)
 
