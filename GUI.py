@@ -15,55 +15,6 @@ import math
 import hashlib
 from copy import deepcopy
 
-#http://wiki.wxpython.org/wxGrid
-class BasePropertyTable( wx.grid.PyGridTableBase):
-        def ResetView(self):
-                """Trim/extend the control's rows and update all values"""
-                self.getGrid().BeginBatch()
-                for current, new, delmsg, addmsg in [
-                        (self.currentRows, self.GetNumberRows(), wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED, wx.grid.GRIDTABLE_NOTIFY_ROWS_APPENDED),
-                        (self.currentColumns, self.GetNumberCols(), wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED, wx.grid.GRIDTABLE_NOTIFY_COLS_APPENDED),
-                ]:
-                        if new < current:
-                                msg = wx.grid.GridTableMessage(
-                                        self,
-                                        delmsg,
-                                        new,    # position
-                                        current-new,
-                                )
-                                self.getGrid().ProcessTableMessage(msg)
-                        elif new > current:
-                                msg = wx.grid.GridTableMessage(
-                                        self,
-                                        addmsg,
-                                        new-current
-                                )
-                                self.getGrid().ProcessTableMessage(msg)
-                self.UpdateValues()
-                self.getGrid().EndBatch()
-
-                # The scroll bars aren't resized (at least on windows)
-                # Jiggling the size of the window rescales the scrollbars
-                h,w = grid.GetSize()
-                grid.SetSize((h+1, w))
-                grid.SetSize((h, w))
-                grid.ForceRefresh()
-
-        def UpdateValues( self ):
-                """Update all displayed values"""
-                msg = wxGridTableMessage(self, wxGRIDTABLE_REQUEST_VIEW_GET_VALUES)
-                self.getGrid().ProcessTableMessage(msg)
-#http://wiki.wxpython.org/wxGrid
-class _PropertyGrid( wx.grid.Grid):
-        def SetTable( self, object, *attributes ):
-                self.tableRef = weakref.ref( object )
-                return wx.grid.Grid.SetTable( self, object, *attributes )
-        def GetTable( self ):
-                return self.tableRef()
-
-
-
-
 def md5Checksum(filePath):
     with open(filePath, 'rb') as fh:
         m = hashlib.md5()
@@ -342,8 +293,9 @@ def getGroupMapping(filepath):
     f = open(filepath, 'r')
     dict = {}
     for l in f:
-        l = l.rstrip('\n').split(':')
-        dict.setdefault(l[1], l[0])
+        l = l.strip().split(':')
+        dict.setdefault(l[1], []).append(l[0])
+
     f.close()
     return dict
 
@@ -358,6 +310,7 @@ def countRowsNCols(filepath):
         return [col + 1, row]
 
 class ChooseFrame(wx.Frame):
+
     title = "Choose Genes and Colors"    
     def __init__(self, parent, values, *args, **kwargs):
         wx.Frame.__init__(self, wx.GetApp().TopWindow, title=self.title)
@@ -548,16 +501,24 @@ class MainWindow(wx.Frame):
                 
                 try:
                     f = open('grid/gridtitles.tsv', 'r')
-                    head = f.readline().split('\t')                
+                    titlehead = f.readline().strip().split('\t')
                     f.close()
-                    titles = getgenpos('a.tsv', head, '\t')                    
-                    print titles
+
+                    i=0
+                    head = '\t'.join(head).strip().split('\t')
+                    for v in head:
+                        if v not in titlehead:
+                            self.grid.SetColSize(i, 0)
+                        i=i+1
+
+                    """
                     for i in range(dim[0]):
                         if i not in titles:
-                            self.grid.SetColSize(i, 0)  
+                            self.grid.SetColSize(i, 0)
+                    """
                     
                 except IOError:
-                    print 'Please create \grid\gridtitles.tsv and enter the title names separated by linebreak'
+                    print 'ERROR ----- Please create \grid\gridtitles.tsv and enter the title names separated by linebreak'
                
                 
                 self.panel.box.Layout()
@@ -720,14 +681,87 @@ class MainWindow(wx.Frame):
         for x in range(cols):
             values[0].append(str(self.grid.GetColLabelValue(x)))
             values[1].append(str(self.grid.GetCellValue(row, x)))
-        
-        #print self.grid.GetCellValue((self.grid.GetSelectedRows()[0]),3)
-        #dlg = wx.MessageDialog(self,self.grid.GetRowLabelValue(self.grid.GetSelectedRows()[0]), "Geneinformation", wx.OK)
-        #dlg = ChooseMessageDialog(self,str(values), "Geneinformation", wx.OK)
-        
-        #dlg.ShowModal() # Show it
-        #dlg.Destroy() # finally destroy it when finished.
-        ChooseFrame(self, values=values).Show()
+
+        #ChooseFrame(self, values=values).Show()
+
+        mdict = getGroupMapping("maps/KorrelationMapping.csv")
+
+        values.append(mdict)
+        for v in values:
+            print v
+
+        pos = [[],[]]
+
+        for k in mdict:
+            pos[0].append(k)
+            temp = []
+            for v in mdict.get(k):
+                temp.append(values[0].index(v))
+            pos[1].append(temp)
+
+        print pos
+
+        #g[0] = ['healthy', 'pre-5-Aza', 'post-5-Aza', 'post-Len', 'pre-Len']
+        pos[0][4]='MDS low+int-1'
+        pos[0][1]='MDS int-2+high'
+
+        fig = plt.figure()
+        ax = plt.subplot(111)
+
+        i = 0
+        for g in pos[0]:
+            meth = []
+            exp = []
+            for v in pos[1][i]:
+                if v < 78:
+                    meth.append(float(values[1][v]))
+                elif v > 78:
+                    exp.append(float(values[1][v]))
+                else:
+                    print 'MappingERROR'
+            i = i+1
+
+            col = 'g'
+            if str(g) == 'healthy':
+                col = 'g'
+            if str(g) == 'MDS int-2+high':
+                col = 'r'
+            if str(g) == 'post-5-Aza':
+                col = 'y'
+            if str(g) == 'post-Len':
+                col = 'c'
+            if str(g) == 'MDS low+int-1':
+                col = 'b'
+
+            ax.plot(meth, exp, 'ro', c=col, label=g)
+
+
+            print '\n'
+            print g
+            print meth
+            print exp
+
+        #plt.legend(bbox_to_anchor=(0., 1.02, 1., .102),loc=3,ncol=2, mode="expand", borderaxespad=0.)
+
+
+        #plt.savefig('samplefigure', bbox_extra_artists=(bbox_extra_artists=(,), bbox_inches='tight',), bbox_inches='tight')
+
+
+        plt.xlabel('Methylierung')
+        plt.ylabel('Genexpression')
+        plt.title(values[1][0])
+
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.7, box.height])
+
+        # Put a legend to the right of the current axis
+        #ax.legend(loc='upper left', bbox_to_anchor=(1, 0.5))
+        ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+        plt.show()
+
+
+
+
 
     #splicing plot   
     def OnPrint(self, event):
