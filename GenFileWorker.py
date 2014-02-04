@@ -8,7 +8,7 @@ from scipy import stats
 
 '''
 Created on 11.12.2013
-New Microarray files
+New Microarray files added
 @author: Axel Wilbertz
 '''
 from test.test_argparse import WFile

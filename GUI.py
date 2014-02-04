@@ -1,6 +1,6 @@
 '''
 Created on 23.04.2013
-@author: naxobIdeaPad
+@author: Axel Wilbertz
 '''
 import wx
 import os
