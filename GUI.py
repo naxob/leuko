@@ -35,7 +35,7 @@ def getGeneColMatch(filepath):
     f.close()
     return d.setdefault(os.path.basename(filepath))
 
-def getExon(genepos, values):
+def getExon(genepos,transpos,refstartpos,refstoppos,expstartpos,expstoppos, values):
     #checkIndexFile('test/refGene.tsv')
     #LOC256021 multiple entries in refgene
     refgene = open('test/refGene.tsv', 'r')
@@ -75,9 +75,9 @@ def getExon(genepos, values):
     #zieht sich aus der probesets den start und stop bereich
     refgenestartstoplist = []
     for v in genelist:
-        refstart = v[9].split(',')
-        refstop = v[10].split(',')
-        trans = v[1]
+        refstart = v[refstartpos].split(',')
+        refstop = v[refstoppos].split(',')
+        trans = v[transpos]
         refstart = filter(None, refstart)
         refstop = filter(None, refstop)                   
         refgenestartstoplist.append([refstart, refstop,trans])
@@ -91,13 +91,13 @@ def getExon(genepos, values):
         for p in values:
             i = 0            
             while i < len(t[0]):
-                if long(t[0][i]) <= long(p[14]) and  long(p[15]) <= long(t[1][i]):                     
+                if long(t[0][i]) <= long(p[expstartpos]) and  long(p[expstoppos]) <= long(t[1][i]):                     
                     #print 'exon refstart ' +str(t[0][i]) +' probestart '+ str(p[14])+' probestop '+str(p[15])  +' refstop '+str(t[1][i])            
                     tempe.append([j,t[0][i]])
                 
                 elif i < len(t[0])-1: 
                     #print 'intron refstart ' +str(t[1][i]) +' probestart '+ str(p[14])+' probestop '+str(p[15])  +' refstop '+str(t[0][i+1])            
-                    if long(t[1][i]) <= long(p[14]) and long(p[15]) <=  long(t[0][i+1]):                        
+                    if long(t[1][i]) <= long(p[expstartpos]) and long(p[expstoppos]) <=  long(t[0][i+1]):                        
                         tempi.append([j,t[1][i]])               
                 i=i+1
             j=j+1
@@ -157,18 +157,9 @@ def absolutePathtoRelative (path):
     return path
 
 def pathToindexpath(path):
-    """
-    indexfilepath=path.split('.')
-    indexfilepath[0]=indexfilepath[0]+'_index'
-    indexfilepath='.'.join(indexfilepath)
-
-    indexfilepath=indexfilepath.split('/')
-    indexfilepath[0]='indexfiles'
-    indexfilepath='/'.join(indexfilepath)
-    """
     filename = os.path.basename(path)
     dirname = os.path.dirname(path)
-    indexfilepath = dirname+'\\indexfiles\\'+filename.split('.')[0]+'_index.tsv'
+    indexfilepath = 'indexfiles\\'+filename.split('.')[0]+'_index.tsv'
     return indexfilepath
 
 def createIndexFile(filepath,genepos):
@@ -220,19 +211,9 @@ def createIndexFile(filepath,genepos):
 
     f.close()
     print 'index und hashwert berechnen'
-    index.insert(0,str(md5Checksum(filepath))+'\n')
-
-    """
-    filepath=filepath.split('.')
-    filepath[0]=filepath[0]+'_index'
-    filepath='.'.join(filepath)
-    
-    filepath=filepath.split('/')
-    filepath[0]='indexfiles'
-    filepath='/'.join(filepath)
-    """
-
+    index.insert(0,str(md5Checksum(filepath))+'\n')    
     indexfilepath = pathToindexpath(filepath)
+    
     f = open(indexfilepath,'w')
     f.write(index[0])
     for v in index[1:]:
@@ -542,16 +523,6 @@ class MainWindow(wx.Frame):
             if self.path.find('.tsv') != -1:      
                    
                 self.statusbar.PushStatusText(self.path)   
-                """
-                self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
-                self.hsizer.Add(wx.Button(self.panel, 7, 'search'),1)
-                self.Bind(wx.EVT_BUTTON, self.OnSearch, id=7)
-                self.genefield = wx.TextCtrl(self.panel)
-                self.hsizer.Add(genefield,3,wx.EXPAND)
-                self.panel.box.Add(self.hsizer,0, wx.EXPAND)    
-                #self.panel.box.Add(wx.Button(self.panel, 3, 'Plot2')) 
-                self.SetSizer(self.panel.box)
-                """
                 
                 self.genefield = wx.TextCtrl(self.panel)
                 self.panel.box.Add(self.genefield,0,wx.EXPAND)
@@ -588,7 +559,7 @@ class MainWindow(wx.Frame):
                 break
             i = i + 1
         f.close()
-        print 'OnSerach path '+str(self.path)
+        print 'OnSepostAzach path '+str(self.path)
         if checkIndexFile(self.path):
             
             f = open(self.path,'r')
@@ -700,10 +671,7 @@ class MainWindow(wx.Frame):
             pos[1].append(temp)
 
         print pos
-
-        #g[0] = ['healthy', 'pre-5-Aza', 'post-5-Aza', 'post-Len', 'pre-Len']
-        pos[0][4]='MDS low+int-1'
-        pos[0][1]='MDS int-2+high'
+        
 
         fig = plt.figure()
         ax = plt.subplot(111)
@@ -772,7 +740,7 @@ class MainWindow(wx.Frame):
         #values.append([])
         #Hier werden die ausgewaehlten Werte und die Spaltennamen fuer die Weitergabe zusammengefasst
         for x in range(cols):
-            values[0].append(str(self.grid.GetColLabelValue(x)))
+            values[0].append(str(self.grid.GetColLabelValue(x).strip()))
         #find col index with gene in title
         i = 0
         for x in values[0]:
@@ -806,18 +774,31 @@ class MainWindow(wx.Frame):
                     values.append(temp)
                     row = row + 1
             except AssertionError:
-                print 'error'                
+                print 'Assertion error'                
                 #if row >= self.grid.GetNumberRows():break
                   
-        mdict = getGroupMapping("maps/groupmapping.csv")
+        mdict = getGroupMapping("maps/SplicingTranscriptExpressionMapping.csv")
         values.append(mdict)
 
         for v in values:
             print v
             
+        #von corr
+        pos = [[],[]]
+        
+        for k in mdict:
+            pos[0].append(k)
+            temp = []
+            for v in mdict.get(k):
+                temp.append(values[0].index(v))
+            pos[1].append(temp)
+       
+        print pos        
+        """
         grouppos = []
         for g in range(len(set(mdict.values()))):
             grouppos.append([])
+            
         i = 0   
         for x in values[0]:
             if values[len(values) - 1].has_key(x):
@@ -834,30 +815,40 @@ class MainWindow(wx.Frame):
                     print 'Fehler bei Gruppenpositionfindung'
                       
             i = i + 1
+        """
         
         drawarray=[]
-        for g in range(len(set(mdict.values()))):
+        for g in range(len(pos[0])):
             drawarray.append([])
+            
         for line in values[1:len(values)-1]:
-            ra = []
-            rars=[]
-            raeb=[]
-            healthy=[]
-            for g in grouppos[0]:
-                ra.append(line[g])
-            drawarray[0].append(ra)
+            healthy = []
+            postLen=[]
+            MDShigh=[]
+            postAza=[]
+            MDSlow=[]
             
-            for g in grouppos[1]:
-                rars.append(line[g])
-            drawarray[1].append(rars)
-            
-            for g in grouppos[2]:
-                raeb.append(line[g])
-            drawarray[2].append(raeb)
-            
-            for g in grouppos[3]:
+            for g in pos[1][0]:
                 healthy.append(line[g])
-            drawarray[3].append(healthy)
+            drawarray[0].append(healthy)
+            
+            for g in pos[1][1]:
+                postLen.append(line[g])
+            drawarray[1].append(postLen)
+            
+            for g in pos[1][2]:
+                MDShigh.append(line[g])
+            drawarray[2].append(MDShigh)
+            
+            for g in pos[1][3]:
+                postAza.append(line[g])
+            drawarray[3].append(postAza)
+            
+            for g in pos[1][4]:
+                MDSlow.append(line[g])
+            drawarray[4].append(MDSlow)
+            
+            
         #Mittelwerte und Standardabweichung berechnen
         meandrawarray = deepcopy(drawarray)
         devdrawarray = deepcopy(drawarray)
@@ -867,7 +858,6 @@ class MainWindow(wx.Frame):
                 drawarray[i][j]=m
                 meandrawarray[i][j]=mean(m)
                 devdrawarray[i][j]=std(m)
-                
         
         print '\nrohwerte'
         for x in drawarray:
@@ -879,11 +869,11 @@ class MainWindow(wx.Frame):
         for v in devdrawarray:
             print v
         print '\n'
-                       
-        exonintron = getExon(genecol, values[1:len(values) - 1])
+                             
+        exonintron = getExon(genecol,1,9,10,7,8, values[1:len(values) - 1])
         exon=exonintron[0]
-        intron=exonintron[1]        
-     
+        intron=exonintron[1]     
+        
         fig = plt.figure(1)
         #plt.subplot(211)
         
@@ -988,49 +978,49 @@ class MainWindow(wx.Frame):
         #ax2 = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         fig.add_subplot(gs[1])
         #ax2.grid(b=True, which='major')
-        rar = range(len(meandrawarray[0]))
-        rarsr = range(len(meandrawarray[1]))
-        raebr = range(len(meandrawarray[2]))
-        healthyr = range(len(meandrawarray[3]))
-        ra = meandrawarray[0]
-        rars = meandrawarray[1]
-        raeb = meandrawarray[2]
-        healthy = meandrawarray[3]
         
-        rac,rarsc,raebc,healthyc = 'b','g','r','c'
+            
+        healthyr = range(len(meandrawarray[0]))
+        postLenr = range(len(meandrawarray[1]))
+        MDShighr = range(len(meandrawarray[2]))
+        postAzar = range(len(meandrawarray[3]))
+        MDSlowr = range(len(meandrawarray[4]))
+        
+        healthy = meandrawarray[0]
+        postLen = meandrawarray[1]
+        MDShigh = meandrawarray[2]
+        postAza = meandrawarray[3]
+        MDSlow = meandrawarray[4]
+        
+        postAzac,healthyc,postLenc,MDShighc,MDSlowc = 'b','g','r','c','k'
         
         #mittelwert durch kurven plotten
-        plt.plot(rar,ra,color=rac,linewidth=2,label='RA')
-        plt.plot(rarsr,rars,color=rarsc,linewidth=2,label='RARS')
-        plt.plot(raebr,raeb,color=raebc,linewidth=2,label='RAEB')
+        plt.plot(postAzar,postAza,color=postAzac,linewidth=2,label='postAza')
+        plt.plot(postLenr,postLen,color=postLenc,linewidth=2,label='postLen')
+        plt.plot(MDShighr,MDShigh,color=MDShighc,linewidth=2,label='MDShigh')
+        plt.plot(MDSlowr,MDSlow,color=MDSlowc,linewidth=2,label='MDSlow')
         plt.plot(healthyr,healthy,color=healthyc,linewidth=2,label='healthy')
+        
         plt.legend()
         
         
         i=0
-        while i<len(rar):
-            rar[i]=rar[i]-0.1
-            rarsr[i]=rarsr[i]-0.05
-            raebr[i]=raebr[i]+0.05
-            healthyr[i]=healthyr[i]+0.1
+        while i<len(healthyr):
+            healthyr[i]=healthyr[i]-0.1
+            postLenr[i]=postLenr[i]-0.05
+            MDShighr[i]=MDShighr[i]+0.05
+            postAzar[i]=postAzar[i]+0.1
+            MDSlowr[i]=MDSlowr[i]+0.15            
             i=i+1  
         
         #Errorbar durch standardabweichung zeichnen fmt blockiert die farb belegung
-        plt.errorbar(range(len(ra)), ra, yerr=devdrawarray[0],fmt=None,color=rac,capthick=2,label="series 1",capsize=5)
+        plt.errorbar(range(len(healthy)), healthy, yerr=devdrawarray[0],fmt=None,color=healthyc,capthick=2,label="series 1",capsize=5)
         #print 'laenge w : '+ str(len(w)) +' w :'+str(w)
-        plt.errorbar(range(len(rars)), rars, yerr=devdrawarray[1],fmt=None,color=rarsc,capthick=2,label="series 1",capsize=5)
-        plt.errorbar(range(len(raeb)), raeb, yerr=devdrawarray[2],fmt=None,color=raebc,capthick=2,label="series 1",capsize=5)
-        plt.errorbar(range(len(healthy)), healthy, yerr=devdrawarray[3],fmt=None,color=healthyc,capthick=2,label="series 1",capsize=5)
+        plt.errorbar(range(len(postLen)), postLen, yerr=devdrawarray[1],fmt=None,color=postLenc,capthick=2,label="series 1",capsize=5)
+        plt.errorbar(range(len(MDShigh)), MDShigh, yerr=devdrawarray[2],fmt=None,color=MDShighc,capthick=2,label="series 1",capsize=5)
+        plt.errorbar(range(len(postAza)), postAza, yerr=devdrawarray[3],fmt=None,color=postAzac,capthick=2,label="series 1",capsize=5)
+        plt.errorbar(range(len(MDSlow)), MDSlow, yerr=devdrawarray[4],fmt=None,color=MDSlowc,capthick=2,label="series 1",capsize=5)
         
-        """ 
-        i=0
-        for x in drawarray:
-            i=0
-            for y in x:
-                for z in y:
-                    plt.plot(i,z,'b.')
-                i=i+1
-        """
         #punkte ploten
         g=0
         for x in drawarray:
@@ -1044,17 +1034,21 @@ class MainWindow(wx.Frame):
                     
                     col='b.'
                     if g==0:
-                        col=rac+'.'
-                        dimr=rar
-                    elif g==1:
-                        col=rarsc+'.'
-                        dimr=rarsr
-                    elif g==2:
-                        col=raebc+'.'
-                        dimr=raebr
-                    elif g==3:
                         col=healthyc+'.'
                         dimr=healthyr
+                    elif g==1:
+                        col=postLenc+'.'
+                        dimr=postLenr
+                    elif g==2:
+                        col=MDShighc+'.'
+                        dimr=MDShighr
+                    elif g==3:
+                        col=postAzac+'.'
+                        dimr=postAzar
+                    elif g==4:
+                        col=MDSlowc+'.'
+                        dimr=MDSlowr
+                    
                     #print 'laenge temp : '+str(len(temp))+' temp '+str(temp)
 
                     plt.plot(dimr,temp,col)
