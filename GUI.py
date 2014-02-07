@@ -84,11 +84,15 @@ def getExon(genepos,transpos,refstartpos,refstoppos,expstartpos,expstoppos, valu
     #geht die transkript liste durch ueberprueft jedes probeset ob es in dem bereich liegt
     exon = []
     intron = []
-    for t in refgenestartstoplist:
+    print '-------- intron exon -------'
+    print refgenestartstoplist
+    
+    for t in refgenestartstoplist:           
         tempe = []
         tempi=[]
         j=0
         for p in values:
+            print 'r '+str(p[expstartpos])+' '+str(p[expstoppos])
             i = 0            
             while i < len(t[0]):
                 if long(t[0][i]) <= long(p[expstartpos]) and  long(p[expstoppos]) <= long(t[1][i]):                     
@@ -902,14 +906,12 @@ class MainWindow(wx.Frame):
                                 rect = patches.Rectangle((a[s][0]-0.5,j), i-s+1, 0.5, edgecolor='black',facecolor='grey')
                                 ax3.add_patch(rect)
                                 done = True
-                                print 'done'
                                 break
                         else:
                             #print str(s)+'-'+str(i)  
                             rect = patches.Rectangle((a[s][0]-0.5,j), i-s+1, 0.5, edgecolor='black',facecolor='grey')
                             ax3.add_patch(rect)          
                             i=i+1
-                            print 'continue'
                             if i != len(a)-1:
                                 continue
                 if not done:     
@@ -1014,12 +1016,12 @@ class MainWindow(wx.Frame):
             i=i+1  
         
         #Errorbar durch standardabweichung zeichnen fmt blockiert die farb belegung
-        plt.errorbar(range(len(healthy)), healthy, yerr=devdrawarray[0],fmt=None,color=healthyc,capthick=2,label="series 1",capsize=5)
+        plt.errorbar(range(len(healthy)), healthy, yerr=devdrawarray[0],color=healthyc,capthick=2,label="series 1",capsize=5)
         #print 'laenge w : '+ str(len(w)) +' w :'+str(w)
-        plt.errorbar(range(len(postLen)), postLen, yerr=devdrawarray[1],fmt=None,color=postLenc,capthick=2,label="series 1",capsize=5)
-        plt.errorbar(range(len(MDShigh)), MDShigh, yerr=devdrawarray[2],fmt=None,color=MDShighc,capthick=2,label="series 1",capsize=5)
-        plt.errorbar(range(len(postAza)), postAza, yerr=devdrawarray[3],fmt=None,color=postAzac,capthick=2,label="series 1",capsize=5)
-        plt.errorbar(range(len(MDSlow)), MDSlow, yerr=devdrawarray[4],fmt=None,color=MDSlowc,capthick=2,label="series 1",capsize=5)
+        plt.errorbar(range(len(postLen)), postLen, yerr=devdrawarray[1],color=postLenc,capthick=2,label="series 1",capsize=5)
+        plt.errorbar(range(len(MDShigh)), MDShigh, yerr=devdrawarray[2],color=MDShighc,capthick=2,label="series 1",capsize=5)
+        plt.errorbar(range(len(postAza)), postAza, yerr=devdrawarray[3],color=postAzac,capthick=2,label="series 1",capsize=5)
+        plt.errorbar(range(len(MDSlow)), MDSlow, yerr=devdrawarray[4],color=MDSlowc,capthick=2,label="series 1",capsize=5)
         
         #punkte ploten
         g=0
