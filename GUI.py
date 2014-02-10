@@ -294,95 +294,7 @@ def countRowsNCols(filepath):
         # da 5 messwerte vorhanden sind allerdings nur 4 Tabstopps dazwischen.     
         return [col + 1, row]
 
-class ChooseFrame(wx.Frame):
-
-    title = "Choose Genes and Colors"    
-    def __init__(self, parent, values, *args, **kwargs):
-        wx.Frame.__init__(self, wx.GetApp().TopWindow, title=self.title)
-        self.panel = DemoPanel(self)
-        self.grid = wx.grid.Grid(self.panel)                
-        self.grid.CreateGrid(len(values[0]), 2)
-        print values
-        mdict = getGroupMapping("maps/groupmapping.csv")
-        values.append(mdict)
-        i = 0
-        for v in values[0]:       
-            if mdict.has_key(v):
-                self.grid.SetCellValue(i, 1, mdict.get(v))                     
-            self.grid.SetRowLabelValue(i, v)
-            self.grid.SetCellValue(i, 0, values[1][i])
-            i = i + 1         
-        
-        print mdict
-        self.panel.box.Add(self.grid, 2, wx.EXPAND)
-        self.panel.box.Add(wx.Button(self.panel, 3, 'Plot'), 0, wx.ALIGN_RIGHT)
-        #self.Bind(wx.EVT_BUTTON, self.OnPlot, id=3)
-        self.Bind(wx.EVT_BUTTON, lambda evt, values=values: self.OnPlot(evt, values), id=3)
-        
-        
-        #sowas dummes !!!
-        
-        self.grid.SetRowLabelAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTRE)
-        self.grid.SetRowLabelSize(wx.grid.GRID_AUTOSIZE)        
-        self.grid.AutoSize()
-        self.panel.box.Layout()
-        
-    #actual correlation plot
-    def OnPlot(self, event, values):
-        #prepare values for plot
-        print '\nplot pressed\n'
-        temp = [[], [], []]
-        i = 0
-        for x in values[0]:
-            if values[2].has_key(x):
-                temp[0].append(x)
-                temp[1].append(values[2].get(x))
-                temp[2].append(values[1][i])
-            i = i + 1
-        temp.append(values[1][0])
-        for l in temp:
-            print l
        
-        i = 0        
-        group = ['RA', 'RARS', 'RAEB', 'healthy']       
-        for g in group:
-            data1 = []
-            data2 = []
-            i = 0
-            for v in temp[1][:20]:
-                if str(v) == str(g):
-                    data1.append(temp[2][i])
-                i = i + 1
-            i = 20         
-            for v in temp[1][20:]:
-                if str(v) == str(g):
-                    data2.append(temp[2][i])
-                i = i + 1
-            col = 'g'
-            if str(g) == 'RA':
-                col = 'b'
-            if str(g) == 'RARS':
-                col = 'pink'
-            if str(g) == 'RAEB':
-                col = 'r'
-            if str(g) == 'healthy':
-                col = 'g'
-            plt.plot(data1, data2, 'ro', c=col, label=g)
-            
-            print '\n'
-            print data1
-            print data2
-            
-        #plt.legend(bbox_to_anchor=(0., 1.02, 1., .102),loc=3,ncol=2, mode="expand", borderaxespad=0.)
-        
-        #plt.savefig('samplefigure', bbox_extra_artists=(bbox_extra_artists=(,), bbox_inches='tight',), bbox_inches='tight')
-        plt.xlabel('Methylierung')
-        plt.ylabel('Genexpression')
-        plt.title(values[1][0])
-        plt.legend()
-        plt.show()                
-         
-        
         
 
 class DemoPanel(wx.Panel):
@@ -798,29 +710,7 @@ class MainWindow(wx.Frame):
             pos[1].append(temp)
        
         print pos        
-        """
-        grouppos = []
-        for g in range(len(set(mdict.values()))):
-            grouppos.append([])
-            
-        i = 0   
-        for x in values[0]:
-            if values[len(values) - 1].has_key(x):
-                #if values[len(values)-1].get(x)=='RA':
-                if(values[len(values) - 1].get(x)) == 'RA':
-                    grouppos[0].append(i)
-                elif(values[len(values) - 1].get(x)) == 'RARS':
-                    grouppos[1].append(i)
-                elif(values[len(values) - 1].get(x)) == 'RAEB':
-                    grouppos[2].append(i)
-                elif(values[len(values) - 1].get(x)) ==  'healthy':
-                    grouppos[3].append(i)
-                else:
-                    print 'Fehler bei Gruppenpositionfindung'
-                      
-            i = i + 1
-        """
-        
+                
         drawarray=[]
         for g in range(len(pos[0])):
             drawarray.append([])
@@ -903,27 +793,27 @@ class MainWindow(wx.Frame):
                             i=i+1
                             if i == len(a)-1:
                                 #print str(s)+'-'+str(i)
-                                rect = patches.Rectangle((a[s][0]-0.5,j), i-s+1, 0.5, edgecolor='black',facecolor='grey')
+                                rect = patches.Rectangle((a[s][0]-0.25,j), i-s+0.5, 0.5, edgecolor='black',facecolor='grey')
                                 ax3.add_patch(rect)
                                 done = True
                                 break
                         else:
                             #print str(s)+'-'+str(i)  
-                            rect = patches.Rectangle((a[s][0]-0.5,j), i-s+1, 0.5, edgecolor='black',facecolor='grey')
+                            rect = patches.Rectangle((a[s][0]-0.25,j), i-s+0.5, 0.5, edgecolor='black',facecolor='grey')
                             ax3.add_patch(rect)          
                             i=i+1
                             if i != len(a)-1:
                                 continue
                 if not done:     
                     #print i 
-                    rect= patches.Rectangle((a[i][0]-0.5,j), 1, 0.5, edgecolor='black',facecolor='grey')
+                    rect= patches.Rectangle((a[i][0]-0.25,j), 0.5, 0.5, edgecolor='black',facecolor='grey')
                     ax3.add_patch(rect)                       
                     i=i+1
                     if i == len(a)-1:
-                        rect= patches.Rectangle((a[i][0]-0.5,j), 1, 0.5, edgecolor='black',facecolor='grey')
+                        rect= patches.Rectangle((a[i][0]-0.25,j), 0.5, 0.5, edgecolor='black',facecolor='grey')
                         ax3.add_patch(rect)
             j=j-1
-        
+        """ 
         j=len(intron)        
         for a in intron:
             i=0
@@ -958,12 +848,7 @@ class MainWindow(wx.Frame):
                         rect= patches.Rectangle((a[i][0]-0.5,j), 1, 0.5, edgecolor='black',facecolor='white')
                         ax3.add_patch(rect)
             j=j-1
-            
-        """   
-            for e in t:
-                rect = matplotlib.patches.Rectangle((e[0],i), 1, 0.5, edgecolor='black',facecolor='grey')
-                ax.add_patch(rect)
-            i=i-1
+       
         """
         
         #plt.xlim([-1,exon[0][len(exon)-1][0]+20])
@@ -1003,8 +888,9 @@ class MainWindow(wx.Frame):
         plt.plot(MDSlowr,MDSlow,color=MDSlowc,linewidth=2,label='MDSlow')
         plt.plot(healthyr,healthy,color=healthyc,linewidth=2,label='healthy')
         
-        plt.legend()
+    
         
+        plt.legend()
         
         i=0
         while i<len(healthyr):
@@ -1074,7 +960,7 @@ class MainWindow(wx.Frame):
         plt.xlabel('Probe Set')
         plt.grid(True)
         plt.xticks(range(len(meandrawarray[0])))
-
+        
         plt.show()       
         
         

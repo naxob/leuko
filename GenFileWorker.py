@@ -906,6 +906,11 @@ def calccornew():
 
 if __name__ == '__main__':
     #taketime(runit, 1)
+    filea = '2014/sampleRohdatenEXON-EXTENDED(65)linear.RMA-EXON-EXTENDED-DABG-Group5log2Sort2AddAnno.tsv'
+    fileb = '2014/sampleRohdatenEXON-EXTENDED(65)linear.RMA-EXON-EXTENDED-DABG-Group5log2AddAnnoSort.tsv'
+    SortFile.main(filea,fileb,'str(line.split("\t")[1]),int(line.split("\t")[0]),int(line.split("\t")[7]),',128000)
+
+
     
 
    
