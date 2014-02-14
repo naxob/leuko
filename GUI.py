@@ -769,9 +769,9 @@ class MainWindow(wx.Frame):
         intron=exonintron[1]     
         
         fig = plt.figure(1)
-        #plt.subplot(211)
         
         gs = gridspec.GridSpec(2,1,height_ratios=[1,10*(math.exp( -0.3*len(exon) ))+2])
+      
         
         ax3 = fig.add_subplot(gs[0])
 
@@ -862,8 +862,14 @@ class MainWindow(wx.Frame):
         plt.xticks(range(len(meandrawarray[0])))
         plt.yticks(range(len(exon)+1))
         
+        box = ax3.get_position()
+        ax3.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+
+        # Put a legend to the right of the current axis
+        #ax.legend(loc='upper left', bbox_to_anchor=(1, 0.5))
+        
         #ax2 = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-        fig.add_subplot(gs[1])
+        ax2 = fig.add_subplot(gs[1])
         #ax2.grid(b=True, which='major')
         
             
@@ -882,15 +888,19 @@ class MainWindow(wx.Frame):
         postAzac,healthyc,postLenc,MDShighc,MDSlowc = 'b','g','r','c','k'
         
         #mittelwert durch kurven plotten
-        plt.plot(postAzar,postAza,color=postAzac,linewidth=2,label='postAza')
-        plt.plot(postLenr,postLen,color=postLenc,linewidth=2,label='postLen')
-        plt.plot(MDShighr,MDShigh,color=MDShighc,linewidth=2,label='MDShigh')
-        plt.plot(MDSlowr,MDSlow,color=MDSlowc,linewidth=2,label='MDSlow')
-        plt.plot(healthyr,healthy,color=healthyc,linewidth=2,label='healthy')
+        p1 = plt.plot(postAzar,postAza,color=postAzac,linewidth=2,label='postAza')
+        p2 = plt.plot(postLenr,postLen,color=postLenc,linewidth=2,label='postLen')
+        p3 = plt.plot(MDShighr,MDShigh,color=MDShighc,linewidth=2,label='MDShigh')
+        p4 = plt.plot(MDSlowr,MDSlow,color=MDSlowc,linewidth=2,label='MDSlow')
+        p5 = plt.plot(healthyr,healthy,color=healthyc,linewidth=2,label='healthy')
         
-    
         
         plt.legend()
+        box = ax2.get_position()
+        ax2.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+
+        ax2.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+        
         
         i=0
         while i<len(healthyr):
@@ -954,6 +964,7 @@ class MainWindow(wx.Frame):
         for x in meandrawarray:
                 mini=min(x)
                 
+        
         plt.ylim((mini-(mini/5)), maxi+(maxi/5))   
         plt.xlim(-1,len(values)-2)   
         plt.ylabel('Genexpression in AU')
