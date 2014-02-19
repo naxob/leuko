@@ -92,7 +92,7 @@ def getExon(genepos,transpos,refstartpos,refstoppos,expstartpos,expstoppos, valu
         tempi=[]
         j=0
         for p in values:
-            print 'r '+str(p[expstartpos])+' '+str(p[expstoppos])
+            #print 'r '+str(p[expstartpos])+' '+str(p[expstoppos])
             i = 0            
             while i < len(t[0]):
                 if long(t[0][i]) <= long(p[expstartpos]) and  long(p[expstoppos]) <= long(t[1][i]):                     
