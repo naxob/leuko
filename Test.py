@@ -1,1 +1,0 @@
-print 'chr03' > 'chry'
