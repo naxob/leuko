@@ -293,8 +293,6 @@ def countRowsNCols(filepath):
         f.close()         
         # da 5 messwerte vorhanden sind allerdings nur 4 Tabstopps dazwischen.     
         return [col + 1, row]
-
-       
         
 
 class DemoPanel(wx.Panel):
