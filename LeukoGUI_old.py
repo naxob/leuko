@@ -4,12 +4,11 @@ Created on 23.04.2013
 '''
 import wx
 import os
-import wx.grid
+#import wx.grid
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.gridspec as gridspec
 from numpy import *
-from copy import deepcopy
 import weakref
 import math
 import hashlib
@@ -586,7 +585,7 @@ class MainWindow(wx.Frame):
 
         print pos
         
-
+        
         fig = plt.figure()
         ax = plt.subplot(111)
 
@@ -656,6 +655,7 @@ class MainWindow(wx.Frame):
         for x in range(cols):
             values[0].append(str(self.grid.GetColLabelValue(x).strip()))
         #find col index with gene in title
+        
         i = 0
         for x in values[0]:
             if x.lower().find('gene') != -1:
@@ -690,7 +690,9 @@ class MainWindow(wx.Frame):
             except AssertionError:
                 print 'Assertion error'                
                 #if row >= self.grid.GetNumberRows():break
-                  
+                
+        # = Drawobject(values[0],values[1:])   
+               
         mdict = getGroupMapping("maps/SplicingTranscriptExpressionMapping.csv")
         values.append(mdict)
 
@@ -811,43 +813,7 @@ class MainWindow(wx.Frame):
                         rect= patches.Rectangle((a[i][0]-0.25,j), 0.5, 0.5, edgecolor='black',facecolor='grey')
                         ax3.add_patch(rect)
             j=j-1
-        """ 
-        j=len(intron)        
-        for a in intron:
-            i=0
-            done = False
-            while i < len(a)-1:
-                if not done:
-                    if a[i][0]+1 == a[i+1][0] and a[i][1] == a[i+1][1]:
-                        s=i
-                        while a[i][0]+1 == a[i+1][0] and a[i][1] == a[i+1][1]:
-                            i=i+1
-                            if i == len(a)-1:
-                                #print str(s)+'-'+str(i)
-                                rect = patches.Rectangle((a[s][0]-0.5,j), i-s+1, 0.5, edgecolor='black',facecolor='white')
-                                ax3.add_patch(rect)
-                                done = True
-                                print 'done'
-                                break
-                        else:
-                            #print str(s)+'-'+str(i)  
-                            rect = patches.Rectangle((a[s][0]-0.5,j), i-s+1, 0.5, edgecolor='black',facecolor='white')
-                            ax3.add_patch(rect)          
-                            i=i+1
-                            print 'continue'
-                            if i != len(a)-1:
-                                continue
-                if not done:     
-                    #print i 
-                    rect= patches.Rectangle((a[i][0]-0.5,j), 1, 0.5, edgecolor='black',facecolor='white')
-                    ax3.add_patch(rect)                       
-                    i=i+1
-                    if i == len(a)-1:
-                        rect= patches.Rectangle((a[i][0]-0.5,j), 1, 0.5, edgecolor='black',facecolor='white')
-                        ax3.add_patch(rect)
-            j=j-1
-       
-        """
+        
         
         #plt.xlim([-1,exon[0][len(exon)-1][0]+20])
         #plt.ylim([0,2*len(exon)+5])
