@@ -23,26 +23,23 @@ class DemoPanel(wx.Panel):
         self.SetSizer(self.box)
         self.genefield=None
         self.SetAutoLayout(1)
+        self.box.Fit(self)
         self.Layout()
-        
-#not in use
-class ChooseMessageDialog(wx.MessageDialog):
-    def __init__(self, parent, *args, **kwargs):
-        md = wx.MessageDialog.__init__(self, parent, *args, **kwargs)
-        pane = wx.Panel(self)
-        
-        
+
+     
 class MainWindow(wx.Frame):
     
     fileobj = None
     grid = None
-    
     
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(600, 450))           
         self.panel = DemoPanel(self) 
         #self.quote = wx.StaticText(self.panel, label="Your quote: ", pos=(-1,40))
         #Menu auslagern als extra Klasse
+        
+        
+        
         filemenu = wx.Menu()
         
         menuOpenFile = filemenu.Append(wx.ID_OPEN, "&Open file", " Open a File")
@@ -68,12 +65,43 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnOpenFilepath,menuOpenFilepath)
         
         # Menubar.
+        
+        opmenu = wx.Menu()
+        menuCalcLogLinear = opmenu.Append(wx.ID_ANY, "&Log/Linear Calculation", "Do some awesome calculation")
+        opmenu.AppendSeparator()  
+        
+        
+        self.Bind(wx.EVT_MENU, self.OnCalcLogLinear,menuCalcLogLinear)
+        
+        
         menuBar = wx.MenuBar()
         menuBar.Append(filemenu, "&File") # Adding the "filemenu" to the MenuBar
+        menuBar.Append(opmenu, "&Fileoperations") 
         
         self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
         self.Show(True)
-       
+    
+    def OnCalcLogLinear(self,event):   
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        browserButton = wx.Button(self.panel,22, 'browse')
+        adressField = wx.TextCtrl(self.panel)
+        
+        hsizer.Add(browserButton,1,wx.EXPAND)
+        hsizer.Add(adressField,1,wx.EXPAND)
+        newAdressField = wx.TextCtrl(self.panel)
+        hsizer.Add(wx.StaticText(self.panel,-1,'New File: ',style=wx.ALIGN_CENTRE),1,wx.EXPAND)
+        hsizer.Add(newAdressField,1,wx.EXPAND)
+        
+        
+        #self.panel.box.Add(hsizer2)            
+        self.panel.box.Add(hsizer,wx.EXPAND)
+        
+        #hsizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        
+     
+        self.panel.box.Layout()
+        
+        print 'Log Lin'
     
     def OnOpenFile(self, event):
         """ Open a file"""

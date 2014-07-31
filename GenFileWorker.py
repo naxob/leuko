@@ -874,6 +874,37 @@ def newcalc():
     #appendcolbyfile('2014/131203_Meth125_Mossner_SampleMethylationProfile_all_AnnoSort.tsv','2014/CD71Methyrohdaten_TargetIDsortedALT.txt', 0, 1, 3,'2014/methmatch2.tsv')
     return
 
+def calcLogLinear(filea,fileb,startcol):
+    print 'calcLogLinear started'
+    f = open(filea,'r')
+    fw = open(fileb,'w')
+    fw.write(f.readline())
+    for line in f:
+        line = line.strip().split('\t')
+        value = line[startcol:]
+        
+        i=0
+        for i in range(len(value)):
+            value[i]=float(value[i])
+        
+        value = np.power(2,value)
+        
+        erg = []
+        erg.extend(line[:startcol])
+        
+        for v in value:
+            erg.append(str(round(v,4)))
+
+        erg = '\t'.join(erg)+'\n'
+        
+        fw.write(erg)
+       
+    f.close()
+    fw.close()
+    print 'calcLogLinear ended'
+    
+    
+
 def calccornew():
     zu = open('2014/zuordnungFuerKorrelation.txt','r')
     zu.readline()
@@ -906,9 +937,14 @@ def calccornew():
 
 if __name__ == '__main__':
     #taketime(runit, 1)
-    filea = '2014/EXON-EXTENDED(65)linear.RMA-EXON-EXTENDED-DABG-Group5log2AddAnnoSort_FINAL.tsv'
-    fileb = '2014/EXON-EXTENDED(65)linear.RMA-EXON-EXTENDED-DABG-Group5log2AddAnnoSort_FINAL2.tsv'
-    SortFile.main(filea,fileb,'str(line.split("\t")[1]),int(line.split("\t")[7]),',128000)
+    #filea = '2014/EXON-EXTENDED(65)linear.RMA-EXON-EXTENDED-DABG-Group5log2AddAnnoSort_FINAL.tsv'
+    #fileb = '2014/EXON-EXTENDED(65)linear.RMA-EXON-EXTENDED-DABG-Group5log2AddAnnoSort_FINAL2.tsv'
+    #SortFile.main(filea,fileb,'str(line.split("\t")[1]),int(line.split("\t")[7]),',128000)
+    
+    #log2 to linear transformation
+    filea = '2014/GENE-CORE(65)linear.RMA-GENE-CORE-Group2Sort.tsv'
+    fileb = '2014/GENE-CORE(65)linear.RMA-GENE-CORE-Group2SortLinear.tsv'
+    calcLogLinear(filea,fileb,7)
 
 
     
