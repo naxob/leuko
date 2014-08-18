@@ -3,6 +3,7 @@ import os
 import SortFile
 import numpy as np
 from scipy import stats
+import File
 
 
 
@@ -165,6 +166,7 @@ def expand_and_delete(filepatha,filepathb,delimitera, genpos, gensep):
     print '\nexpanding and delete'
     o = open(filepatha,'r')
     n = open (filepathb,'w')
+    n.write(o.readline())
     i = 0
     for line in o:
         line = line.split(delimitera)
@@ -497,75 +499,6 @@ def sortgenexpr():
     @warning: chromosome col must be like chr01 not chr1 and must be sorted by chromosome and start
     """
 
-def fillemptygenes(patha,pathb,pathw,colposa,colposb,repval,delimitera,delimiterb):
-    filea = open(patha,'r')
-    fileb = open(pathb,'r')
-    filew = open(pathw,'w')
-    fileb.readline()
-    filew.write(filea.readline())
-    
-    lineb=fileb.readline().split(delimiterb)
-    a=2
-    wrote = []
-    pos = [0]
-    newstart = 0
-    for linea in filea:        
-        wrote = []      
-        linea = linea.split(delimitera)
-        print 'a '+str(a)+' '+linea[colposa[1]]+' '+linea[colposa[2]]+'\nb '+str(int(pos[0]))+' '+lineb[colposb[1]]+' '+lineb[colposb[2]]+' '+lineb[colposb[3]]+'\n'
-        #colposa = getgenpos('2014/sampleRohdatenGENE-CORE(65)linear.RMA-GENE-CORE-Group2log2SORT.tsv',['Gene Symbol','Chromosome','Start'],'\t')
-        #colposb = getgenpos('2014/refGeneSorted.tsv',['name2','chrom','txStart','txEnd'],'\t')
-
-        #if (a > 80):break
-        if linea[colposa[0]] == repval:    
-            # chr a gleich chr b
-            if newstart:
-                fileb.seek(newstart)
-                #print 'took newstart '+str(newstart)
-                lineb = fileb.readline().split(delimiterb)
-                newstart = 0           
-            if linea[colposa[1]] == lineb[colposb[1]]:
-                #print 'a '+str(a)+' '+linea[colposa[1]]+' '+linea[colposa[2]]+'\nb '+str(int(pos[0]))+' '+lineb[colposb[1]]+' '+lineb[colposb[2]]+' '+lineb[colposb[3]]+'\n'
-
-                # so lange start > txstart
-                while int(linea[colposa[2]]) >= int(lineb[colposb[2]]):
-                    # falls chr a > chr b break , nextline in b               
-                    if linea[colposa[1]] < lineb[colposb[1]]:
-                        break
-                    #gen schon geschrieben ansonsten redundante eintraege
-                    if lineb[colposb[0]] in wrote:
-                        pass
-                        #print 'inwrote !!!'
-                        #print '\ta '+str(a)+' '+linea[colposa[1]]+' '+linea[colposa[2]]+'\n\tb '+str(int(pos[0]))+' '+lineb[colposb[1]]+' '+lineb[colposb[2]]+' '+lineb[colposb[3]]
-                        
-                    if int(linea[colposa[2]]) <= int(lineb[colposb[3]]) and (lineb[colposb[0]] not in wrote):
-                        newstart = int(pos[0])
-                        wrote.append(lineb[colposb[0]])
-                        #print 'a '+str(a)+' '+linea[colposa[1]]+' '+linea[colposa[2]]+'\nb '+str(int(pos[0]))+' '+lineb[colposb[1]]+' '+lineb[colposb[2]]+' '+lineb[colposb[3]]
-                        #print wrote
-                        linea[colposa[0]] = lineb[colposb[0]]
-                        
-                        #print ''
-                    lineb = fileb.readline().split(delimiterb)
-                    if not wrote:
-                        pos.append(int(fileb.tell()))
-                        if len(pos) > 2:pos.pop(0)
-                        #print pos
-       
-            # chr a < chr b weiter in a glaube das wird nie erreicht
-            elif linea[colposa[1]] < lineb[colposb[1]]:
-                print 'a '+str(a)+' '+linea[colposa[1]]+' '+linea[colposa[2]]+'\nb '+str(int(pos[0]))+' '+lineb[colposb[1]]+' '+lineb[colposb[2]]+' '+lineb[colposb[3]]
-                        
-                a+=1
-                continue
-            # chr a > chr b weiter in b glaube das wird nie erreicht
-            elif linea[colposa[1]] > lineb[colposb[1]]:
-                lineb = fileb.readline().split(delimiterb)
-                pos.append(int(fileb.tell()))
-                if len(pos) > 2:pos.pop(0)
-            
-        filew.write(delimitera.join(linea))
-        a+=1
                 
             
     """
@@ -765,6 +698,76 @@ def countvalue(path,delimiter,value,pos):
     f.close()
     return i
 
+def fillemptygenes(patha,pathb,pathw,colposa,colposb,repval,delimitera,delimiterb):
+    filea = open(patha,'r')
+    fileb = open(pathb,'r')
+    filew = open(pathw,'w')
+    fileb.readline()
+    filew.write(filea.readline())
+    
+    lineb=fileb.readline().split(delimiterb)
+    a=2
+    wrote = []
+    pos = [0]
+    newstart = 0
+    for linea in filea:        
+        wrote = []      
+        linea = linea.split(delimitera)
+        print 'a '+str(a)+' '+linea[colposa[1]]+' '+linea[colposa[2]]+'\nb '+str(int(pos[0]))+' '+lineb[colposb[1]]+' '+lineb[colposb[2]]+' '+lineb[colposb[3]]+'\n'
+        #colposa = getgenpos('2014/sampleRohdatenGENE-CORE(65)linear.RMA-GENE-CORE-Group2log2SORT.tsv',['Gene Symbol','Chromosome','Start'],'\t')
+        #colposb = getgenpos('2014/refGeneSorted.tsv',['name2','chrom','txStart','txEnd'],'\t')
+
+        #if (a > 80):break
+        if linea[colposa[0]] == repval:    
+            # chr a gleich chr b
+            if newstart:
+                fileb.seek(newstart)
+                #print 'took newstart '+str(newstart)
+                lineb = fileb.readline().split(delimiterb)
+                newstart = 0           
+            if linea[colposa[1]] == lineb[colposb[1]]:
+                #print 'a '+str(a)+' '+linea[colposa[1]]+' '+linea[colposa[2]]+'\nb '+str(int(pos[0]))+' '+lineb[colposb[1]]+' '+lineb[colposb[2]]+' '+lineb[colposb[3]]+'\n'
+
+                # so lange start > txstart
+                while int(linea[colposa[2]]) >= int(lineb[colposb[2]]):
+                    # falls chr a > chr b break , nextline in b               
+                    if linea[colposa[1]] < lineb[colposb[1]]:
+                        break
+                    #gen schon geschrieben ansonsten redundante eintraege
+                    if lineb[colposb[0]] in wrote:
+                        pass
+                        #print 'inwrote !!!'
+                        #print '\ta '+str(a)+' '+linea[colposa[1]]+' '+linea[colposa[2]]+'\n\tb '+str(int(pos[0]))+' '+lineb[colposb[1]]+' '+lineb[colposb[2]]+' '+lineb[colposb[3]]
+                        
+                    if int(linea[colposa[2]]) <= int(lineb[colposb[3]]) and (lineb[colposb[0]] not in wrote):
+                        newstart = int(pos[0])
+                        wrote.append(lineb[colposb[0]])
+                        #print 'a '+str(a)+' '+linea[colposa[1]]+' '+linea[colposa[2]]+'\nb '+str(int(pos[0]))+' '+lineb[colposb[1]]+' '+lineb[colposb[2]]+' '+lineb[colposb[3]]
+                        #print wrote
+                        linea[colposa[0]] = lineb[colposb[0]]
+                        
+                        #print ''
+                    lineb = fileb.readline().split(delimiterb)
+                    if not wrote:
+                        pos.append(int(fileb.tell()))
+                        if len(pos) > 2:pos.pop(0)
+                        #print pos
+       
+            # chr a < chr b weiter in a glaube das wird nie erreicht
+            elif linea[colposa[1]] < lineb[colposb[1]]:
+                print 'a '+str(a)+' '+linea[colposa[1]]+' '+linea[colposa[2]]+'\nb '+str(int(pos[0]))+' '+lineb[colposb[1]]+' '+lineb[colposb[2]]+' '+lineb[colposb[3]]
+                        
+                a+=1
+                continue
+            # chr a > chr b weiter in b glaube das wird nie erreicht
+            elif linea[colposa[1]] > lineb[colposb[1]]:
+                lineb = fileb.readline().split(delimiterb)
+                pos.append(int(fileb.tell()))
+                if len(pos) > 2:pos.pop(0)
+            
+        filew.write(delimitera.join(linea))
+        a+=1
+
 
 def runit():
     #os.system('SortFile.py refGene.tsv refGene.tsv -k line.split("\t")[2]')
@@ -935,18 +938,362 @@ def calccornew():
     o.close()
     n.close()
 
+def fillemptynew(patha,pathb,pathw,pathwe,gencola,gencolb,starta,startb,repval):
+    print 'fillemptynew started'
+    """
+    replace unannotated gene entries like --- in path a. search in file b for matching transcript position
+    """
+    fa = open(patha,'r')
+    fr = open(pathb,'r')    
+    fw = open(pathw,'w')
+    fwe = open(pathwe,'w')
+    
+    
+    anotitle = fa.readline()
+    fw.write(anotitle)
+    
+    d=[]
+    reftitle = fr.readline().split('\t')
+    refgenecol = reftitle.index('name2')
+    refstart = reftitle.index('txStart')
+    refstop = reftitle.index('txEnd')
+    refchrom = reftitle.index('chrom')
+    
+    chromdict = {}
+    
+
+    for line in fr:
+       
+        line = line.split('\t')
+        temp = []
+        temp.append(line[refstart])
+        temp.append(line[refstop])
+        temp.append(line[refgenecol])  
+        temp.append(line[refchrom])      
+        
+        #-1 because array chr1 starts at array pos 0
+        if line[refchrom] == 'chrX' or line[refchrom] == 'chrY':
+            if line[refchrom] == 'chrX':
+                chromdict.setdefault(line[refchrom],23-1)
+            else:
+                chromdict.setdefault(line[refchrom],24-1)
+            
+        else:
+            chromdict.setdefault(line[refchrom],int(line[refchrom][3:])-1)
+            
+        d.append(temp)
+            
+    
+    k = sorted(d,key=lambda x:int(x[1]))
+    k = sorted(d,key=lambda x:int(x[0]))
+    #k0: start k1: stop k2: gen k3: chrom
+    print len(k)
+    print len(chromdict)
+    print chromdict
+    
+    chromseplist = []
+    
+    itter = []
+    #itter from chr1 to chr 22 + chrX + chrY
+    for i in range(1,len(chromdict)-1):
+        itter.append('chr'+str(i))
+    itter.append('chrX')
+    itter.append('chrY')
+    
+    print itter
+    
+    # filter k by chromosom create new list for each chromosom. append new array with chromosoms to chomlist
+    for s in itter:    
+        temp = filter(lambda v:  v[3] == s, k) 
+        chromseplist.append(temp)
+        #just a check
+        #fw.write(str(temp)+'\n') 
+    
+    anotitle = anotitle.split('\t')
+    anogenecol = anotitle.index('Gene Symbol')
+    anostart = anotitle.index('Start')
+    anostop = anotitle.index('Stop')
+    anochrom = anotitle.index('Chromosome')
+    
+    
+    i=0
+    for anoline in fa:
+        try:
+            anoline = anoline.split('\t')
+            #search the appropriate chromosome list
+            found = False
+            for refline in chromseplist[chromdict.setdefault(anoline[anochrom])]:            
+                if int(refline[0]) <= int(anoline[anostart]) and int(refline[1]) >= int(anoline[anostop]) and refline[3].strip() == anoline[anochrom].strip():
+                    anoline[anogenecol] = refline[2]
+                    fw.write('\t'.join(anoline)) 
+                    found = True
+                    
+            if not found:
+                fwe.write('\t'.join(anoline))                  
+                    
+            i=i+1
+            if i%10000 == 0:
+                print str(i/10000)+str('% processed')
+        except TypeError:
+            fwe.write('EXCEPTION\n')
+            fwe.write('\t'.join(anoline))
+   
+     
+    fa.close()
+    fw.close()
+    fr.close()
+    """
+    #call
+    #FillemptygenesNew
+    filea = '2014All/Edit/AdditionalRefGeneAnnotation/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearNoANNO.tsv'
+    fileb = 'refgene/refGene.tsv'
+    filec = '2014All/Edit/AdditionalRefGeneAnnotation/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearAddANNO.tsv'
+    filed = '2014All/Edit/AdditionalRefGeneAnnotation/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearAddANNOErrors.tsv'
+    #filec = '2014All/Edit/AdditionalRefGeneAnnotation/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearGenesSort.tsv'  
+    fillemptynew(filea,fileb,filec,filed,'','', '','','')
+    
+    #call to eliminate duplicated gen entries
+    
+    filea = '2014All/Edit/AdditionalRefGeneAnnotation/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearAddANNO.tsv'    
+    
+    filew = '2014All/Edit/AdditionalRefGeneAnnotation/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearAddANNONoMulti.tsv'
+    #filec = '2014All/Edit/AdditionalRefGeneAnnotation/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearGenesSort.tsv'  
+    delmultiplelines(filea,filew)
+    
+    """
+    
+def delmultiplelines(filepatha,filepathb):
+    f = open(filepatha,'r')
+    fw = open(filepathb,'w')
+    fw.write(f.readline())
+    
+    #offset = f.tell()
+    dict = {}
+    last = f.readline().split('\t')
+    
+    i=0
+    while True:
+        try:
+            line = f.readline()        
+            line = line.split('\t')     
+                   
+            if line[1] == last[1]:
+                temp = []
+                temp.extend(line)
+                dict.setdefault(line[0],temp)
+                
+            else:
+                if len(dict) == 1:                      
+                    fw.write('\t'.join(last))
+                    dict = {}
+                    temp = []
+                    temp.extend(line)
+                    dict.setdefault(line[0],temp)
+                
+                else:
+                    temp = []
+                    for v in dict:
+                        temp.append(dict.setdefault(v))
+                    #  k = sorted(d,key=lambda x:int(x[1]))
+                    #templist = sorted(temp, key=lambda x:int(x[0]))
+                    for v in temp:
+                        fw.write('\t'.join(v))
+                        
+                    dict = {}
+                    temp = []
+                    temp.extend(line)
+                    dict.setdefault(line[0],temp)
+            
+            #offset.tell()            
+            last = line
+        except IndexError:
+            temp = []
+            for v in dict:
+                temp.append(dict.setdefault(v))
+            for v in temp:
+                fw.write('\t'.join(v))
+            break
+            
+    f.close()
+    fw.close()
+    print 'done'
+
+def calcSplicingIndex(filepatha,filepathb,filepathc):
+    """
+    @param filepatha: gene core file with genewide expression for each patient. NO PROBESETS INCLUDED
+    @param filepathb: probesetexpression file with patients
+    @param filepathc: write new file to filepathc
+    """
+    fc = open(filepatha,'r')
+    fp = open(filepathb,'r')
+    fw = open(filepathc,'w')
+    fwe = open(filepathc+'errors','w')
+    genecoretitles = fc.readline().strip().split('\t')
+    probesettitles = fp.readline().strip().split('\t')
+    
+    genexprdict = {}
+    for line in fc:
+        line = line.strip().split('\t')
+        genexprdict.setdefault(line[0],line)
+    
+    
+    mapper2 = File.Mapper('maps\SplicingTranscriptExpressionMapping.csv',':');
+    
+    valtitles = mapper2.extractTitles()
+    
+    posmapper = {}
+    
+    for p in probesettitles:
+        if p in valtitles:
+            #key:new pos val:old pos
+            posmapper.setdefault(probesettitles.index(p),genecoretitles.index(p))
+     
+    poslist = []     
+    for p in probesettitles:
+        if p in valtitles:
+            temp = []
+            temp.append(probesettitles.index(p))
+            temp.append(genecoretitles.index(p))
+            poslist.append(temp)
+            
+    print 'posmapper %s'%posmapper
+    print len(posmapper)
+    
+    print 'poslist %s'%poslist
+    print len(poslist)
+    
+    print 'valtitles %s'%valtitles
+    
+    newtitles =[]
+    
+    for p in probesettitles:     
+        if p in valtitles:
+            newtitles.append(p+'_NI')
+            
+    print 'newtitles %s'%newtitles
+    
+    newprobesettitles = []
+    newprobesettitles.extend(probesettitles)
+    newprobesettitles.extend(newtitles)
+    
+    print 'newprobesettitles %s'%newprobesettitles
+    
+    dict = mapper2.extractGroupMapping()
+    pos = mapper2.findPositions(valtitles,mapper2.mapperdict)
+    
+    print 'dict\t%s'%dict
+    
+        
+    newdict = {}
+    #dict = mapper2.extractGroupMapping()
+    #pos = mapper2.findPositions(valtitles,mapper2.mapperdict)
+    
+    for v in dict:
+        group = dict.setdefault(v)
+        for g in group:
+            #hexenwerk
+            newdict.setdefault(v,[]).append(g+'_NI')
+            
+    print 'newdict %s' %newdict
+    
+    newpos = mapper2.findPositions(newprobesettitles,newdict)
+    #print 'pos\t%s'%pos    
+    for i in range(len(newpos[0])):newpos[0][i]+='_NI'
+    #print 'newpos\t%s' %newpos
+    for v in pos:print v
+    for v in newpos:print v
+    
+    newprobesettitles.extend(newpos[0])    
+    SIgrouptitles = ['SI_healthy_NI_VS_MDSlow+int-1_NI',
+                     'SI_healthy_NI_VS_MDSint-2+high_NI',
+                     'SI_MDSlow+int-1_NI_VS_MDSint-2+high_NI',
+                     'SI_MDSint-2+high_NI_VS_post-5-Aza_NI',
+                     'SI_MDSlow+int-1_NI_VS_post-Len_NI']
+    newprobesettitles.extend(SIgrouptitles)
+    
+    SIgroups = []
+    SIgroups.append([newprobesettitles.index('healthy_NI'),newprobesettitles.index('MDSlow+int-1_NI')])
+    SIgroups.append([newprobesettitles.index('healthy_NI'),newprobesettitles.index('MDSint-2+high_NI')])
+    SIgroups.append([newprobesettitles.index('MDSlow+int-1_NI'),newprobesettitles.index('MDSint-2+high_NI')])
+    SIgroups.append([newprobesettitles.index('MDSint-2+high_NI'),newprobesettitles.index('post-5-Aza_NI')])
+    SIgroups.append([newprobesettitles.index('MDSlow+int-1_NI'),newprobesettitles.index('post-Len_NI')])
+
+    fw.write('\t'.join(newprobesettitles)+'\n')
+    fwe.write('\t'.join(newprobesettitles)+'\n')
+    
+    i=0
+    genecorline = None
+    for line in fp:
+        line = line.strip().split('\t')        
+        
+        if genecorline == None or genecorline[0] != line[1]:    
+            genecorline = genexprdict.setdefault(line[1])    
+            if not genecorline:
+                #print 'no match for '+str(line[1])+' skipping to next Gene'
+                fwe.write('\t'.join(line)+'\n')
+                continue                
+        """
+        calculate NI for every Patient
+        """
+        for p in poslist:
+                #probeset / gene wide expression line[p[0]]: actual probeset intensity for one patient genecorline[p[1]]: gene wide expression for same patient from genecorefile
+                line.append(str(round(float(line[p[0]])/float(genecorline[p[1]]),4)))
+        
+        """
+        calculate group NIs
+        """
+        for g in newpos[1:]:
+            temp=[]
+            for v in g:
+                temp.append(float(line[v]))
+            line.append(str(round(np.mean(temp),4)))
+        
+        """
+        Calculate group SI
+    
+        healthy_NI_VS_MDSlow+int-1_NI
+        healthy_NI_VS_MDSint-2+high_NI
+        MDSlow+int-1_NI_VS_MDSint-2+high_NI
+        MDSint-2+high_NI_VS_post-5-Aza_NI
+        MDSlow+int-1_NI_VS_post-Len_NI
+        """
+        
+        for g in SIgroups:
+            line.append(str(round(float(line[g[0]])/float(line[g[1]]),4)))
+        
+        
+        fw.write('\t'.join(line)+'\n')    
+            
+        i=i+1
+        
+        if i%10000 == 0:
+            print str(i/10000)+str('% processed')
+
+    fc.close()
+    fp.close()
+    fw.close()
+    fwe.close()
+    
 if __name__ == '__main__':
     #taketime(runit, 1)
     #filea = '2014/EXON-EXTENDED(65)linear.RMA-EXON-EXTENDED-DABG-Group5log2AddAnnoSort_FINAL.tsv'
     #fileb = '2014/EXON-EXTENDED(65)linear.RMA-EXON-EXTENDED-DABG-Group5log2AddAnnoSort_FINAL2.tsv'
     #SortFile.main(filea,fileb,'str(line.split("\t")[1]),int(line.split("\t")[7]),',128000)
     
-    #log2 to linear transformation
-    filea = '2014/GENE-CORE(65)linear.RMA-GENE-CORE-Group2Sort.tsv'
-    fileb = '2014/GENE-CORE(65)linear.RMA-GENE-CORE-Group2SortLinear.tsv'
-    calcLogLinear(filea,fileb,7)
+    #filec = '2014All/Edit/AdditionalRefGeneAnnotation/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearGenesSort.tsv'
+    
+    #fileb = '2014All/Edit/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearShort.tsv'
+    #calcLogLinear(filea,fileb,9)
+    
+    #SortFile.main(fileb,filec,'str(line.split("\t")[1]),int(line.split("\t")[0])',128000)
+    filea = '2014All/Edit/GENE-CORE(65)linear.RMA-GENE-CORE-Group2SortLinear.tsv'
+    fileb = '2014All/Edit/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearAddAnnoFINALSorted.tsv'    
+    filec = '2014All/Edit/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearAddAnnoFINALSortedSI.tsv' 
+    calcSplicingIndex(filea,fileb,filec)
+   
+    #SortFile.main(filea,filec,'str(line.split("\t")[1]),int(line.split("\t")[0])',128000)
 
-
+   
     
 
    

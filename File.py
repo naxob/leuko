@@ -141,7 +141,7 @@ class FileObject(object):
         for line in f:
             print line
         f.close()
-
+        
 
 
 class Mapper(FileObject):
@@ -150,6 +150,7 @@ class Mapper(FileObject):
     '''
     mapperdict = {}
     positions = [[],[]]
+    titles = []
     def __init__(self,filepath,delimiter):
         '''
         Constructor
@@ -162,21 +163,33 @@ class Mapper(FileObject):
         dict = {}
         for line in f:
             line = line.strip().split(self.delimiter)
+            #hexenwerk
             dict.setdefault(line[1], []).append(line[0])
     
         f.close()
         self.mapperdict = dict
         return dict
     
+    def extractTitles(self):
+        f = open(self.filepath, 'r')
+        temp = []
+        for line in f:
+            line = line.strip().split(self.delimiter)
+            temp.append(line[0])
+        f.close()
+        self.titles=temp
+        return temp
+        
     def findPositions(self,titles,mapperdict):
-        pos = [[],[]]
-
+        pos = [[]]
+        
         for k in mapperdict:
             pos[0].append(k)
             temp = []
+            
             for v in mapperdict.get(k):
                 temp.append(titles.index(v))
-            pos[1].append(temp)
+            pos.append(temp)
         self.positions = pos
         return pos
     

@@ -70,6 +70,7 @@ class SplicingPlot(Plots):
         
         ax3 = fig.add_subplot(gs[0])
     
+    
         j=len(self.exon)        
         for a in self.exon:
             i=0
@@ -102,6 +103,7 @@ class SplicingPlot(Plots):
                         rect= patches.Rectangle((a[i][0]-0.25,j), 0.5, 0.5, edgecolor='black',facecolor='grey')
                         ax3.add_patch(rect)
             j=j-1
+        
         
         
         #plt.xlim([-1,exon[0][len(exon)-1][0]+20])
@@ -241,23 +243,27 @@ class SplicingPlot(Plots):
             postAza=[]
             MDSlow=[]
             
-            for g in self.pos[1][0]:
+            """
+            change this !!! first row mds subtypes like healthy second row to last row values for subtypes
+            """
+            
+            for g in self.pos[1]:
                 healthy.append(line[g])
             self.drawarray[0].append(healthy)
             
-            for g in self.pos[1][1]:
+            for g in self.pos[2]:
                 postLen.append(line[g])
             self.drawarray[1].append(postLen)
             
-            for g in self.pos[1][2]:
+            for g in self.pos[3]:
                 MDShigh.append(line[g])
             self.drawarray[2].append(MDShigh)
             
-            for g in self.pos[1][3]:
+            for g in self.pos[4]:
                 postAza.append(line[g])
             self.drawarray[3].append(postAza)
             
-            for g in self.pos[1][4]:
+            for g in self.pos[5]:
                 MDSlow.append(line[g])
             self.drawarray[4].append(MDSlow)
             
@@ -277,8 +283,8 @@ class SplicingPlot(Plots):
             for j in range(len(self.drawarray[i])):
                 m = map(float, meandrawarray[i][j])
                 self.drawarray[i][j]=m
-                meandrawarray[i][j]=mean(m)
-                devdrawarray[i][j]=std(m)
+                meandrawarray[i][j]=round(mean(m),4)
+                devdrawarray[i][j]=round(std(m),4)
                
         self.mean = meandrawarray
         self.std = devdrawarray  
