@@ -162,9 +162,10 @@ class Mapper(FileObject):
         f = open(self.filepath, 'r')
         dict = {}
         for line in f:
-            line = line.strip().split(self.delimiter)
-            #hexenwerk
-            dict.setdefault(line[1], []).append(line[0])
+            if line != '' or None:
+                line = line.strip().split(self.delimiter)
+                #hexenwerk            
+                dict.setdefault(line[1], []).append(line[0])
     
         f.close()
         self.mapperdict = dict

@@ -1164,6 +1164,10 @@ def calcSplicingIndex(filepatha,filepathb,filepathc):
     
     print 'valtitles %s'%valtitles
     
+    print 'groupmaps'
+    groupmaps = mapper2.extractGroupMapping()
+    print groupmaps
+    
     newtitles =[]
     
     for p in probesettitles:     
@@ -1204,19 +1208,42 @@ def calcSplicingIndex(filepatha,filepathb,filepathc):
     for v in newpos:print v
     
     newprobesettitles.extend(newpos[0])    
-    SIgrouptitles = ['SI_healthy_NI_VS_MDSlow+int-1_NI',
-                     'SI_healthy_NI_VS_MDSint-2+high_NI',
-                     'SI_MDSlow+int-1_NI_VS_MDSint-2+high_NI',
-                     'SI_MDSint-2+high_NI_VS_post-5-Aza_NI',
-                     'SI_MDSlow+int-1_NI_VS_post-Len_NI']
+    SIgrouptitles = [
+'SI_healthyNI_VS_lowNI',
+'SI_healthyNI_VS_highNI',
+'SI_lowNI_VS_highNI',
+'SI_preLenNI_VS_postLenNI',
+'SI_pre5AzaNI_VS_post5AzaNI',
+'SI_pre5AzaNI_VS_preLenNI',
+'SI_healthyNI_VS_preLenNI',
+'SI_healthyNI_VS_pre5AzaNI']
+    
     newprobesettitles.extend(SIgrouptitles)
     
     SIgroups = []
-    SIgroups.append([newprobesettitles.index('healthy_NI'),newprobesettitles.index('MDSlow+int-1_NI')])
-    SIgroups.append([newprobesettitles.index('healthy_NI'),newprobesettitles.index('MDSint-2+high_NI')])
-    SIgroups.append([newprobesettitles.index('MDSlow+int-1_NI'),newprobesettitles.index('MDSint-2+high_NI')])
-    SIgroups.append([newprobesettitles.index('MDSint-2+high_NI'),newprobesettitles.index('post-5-Aza_NI')])
-    SIgroups.append([newprobesettitles.index('MDSlow+int-1_NI'),newprobesettitles.index('post-Len_NI')])
+    #group positions for all low patients in one array
+    templow = []
+    templow.append(newprobesettitles.index('preLen_NI'))
+    templow.append(newprobesettitles.index('postLen_NI'))
+    SIgroups.append([[newprobesettitles.index('healthy_NI')],templow])
+    
+    temphigh = []
+    temphigh.append(newprobesettitles.index('pre5Aza_NI'))
+    temphigh.append(newprobesettitles.index('post5Aza_NI'))    
+    SIgroups.append([[newprobesettitles.index('healthy_NI')],temphigh])
+    
+    SIgroups.append([templow,temphigh])
+    
+    SIgroups.append([[newprobesettitles.index('preLen_NI')],[newprobesettitles.index('postLen_NI')]])
+    
+    SIgroups.append([[newprobesettitles.index('pre5Aza_NI')],[newprobesettitles.index('post5Aza_NI')]])
+    
+    SIgroups.append([[newprobesettitles.index('pre5Aza_NI')],[newprobesettitles.index('preLen_NI')]])
+    
+    SIgroups.append([[newprobesettitles.index('healthy_NI')],[newprobesettitles.index('preLen_NI')]])
+    
+    SIgroups.append([[newprobesettitles.index('healthy_NI')],[newprobesettitles.index('pre5Aza_NI')]])
+
 
     fw.write('\t'.join(newprobesettitles)+'\n')
     fwe.write('\t'.join(newprobesettitles)+'\n')
@@ -1258,8 +1285,19 @@ def calcSplicingIndex(filepatha,filepathb,filepathc):
         MDSlow+int-1_NI_VS_post-Len_NI
         """
         
+        #for low and high there are multiple column indexes
         for g in SIgroups:
-            line.append(str(round(float(line[g[0]])/float(line[g[1]]),4)))
+            tempg0 = 0
+            tempg1 = 0
+            for v in g[0]:
+                tempg0+=float(line[v])
+            tempg0 = tempg0 / len(g[0])
+            
+            for v in g[1]:
+                tempg1+=float(line[v])
+            tempg1 = tempg1 / len(g[1])
+            
+            line.append(str(round(tempg0/tempg1,4)))
         
         
         fw.write('\t'.join(line)+'\n')    
@@ -1286,6 +1324,7 @@ if __name__ == '__main__':
     #calcLogLinear(filea,fileb,9)
     
     #SortFile.main(fileb,filec,'str(line.split("\t")[1]),int(line.split("\t")[0])',128000)
+   
     filea = '2014All/Edit/GENE-CORE(65)linear.RMA-GENE-CORE-Group2SortLinear.tsv'
     fileb = '2014All/Edit/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearAddAnnoFINALSorted.tsv'    
     filec = '2014All/Edit/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearAddAnnoFINALSortedSI.tsv' 
@@ -1293,7 +1332,6 @@ if __name__ == '__main__':
    
     #SortFile.main(filea,filec,'str(line.split("\t")[1]),int(line.split("\t")[0])',128000)
 
-   
     
 
    
