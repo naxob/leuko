@@ -69,40 +69,31 @@ class SplicingPlot(Plots):
         gs = gridspec.GridSpec(2,1,height_ratios=[1,10*(math.exp( -0.3*len(self.exon) ))+2])      
         
         ax3 = fig.add_subplot(gs[0])
-    
-    
-        j=len(self.exon)        
-        for a in self.exon:
-            i=0
-            done = False
-            while i < len(a)-1:
-                if not done:
-                    if a[i][0]+1 == a[i+1][0] and a[i][1] == a[i+1][1]:
-                        s=i
-                        while a[i][0]+1 == a[i+1][0] and a[i][1] == a[i+1][1]:
-                            i=i+1
-                            if i == len(a)-1:
-                                #print str(s)+'-'+str(i)
-                                rect = patches.Rectangle((a[s][0]-0.25,j), i-s+0.5, 0.5, edgecolor='black',facecolor='grey')
-                                ax3.add_patch(rect)
-                                done = True
-                                break
+        
+        
+        j=len(self.exon) 
+        k=0       
+        for a in self.exon:  
+            print a          
+            i = 0 
+            while i< len(a)-1:
+                j=i
+                while j<len(a)-1:
+                    if(a[j][0]==a[j+1][0]-1 and a[j][1] == a[j+1][1] and a[j][2] == a[j+1][2]):
+                        j=j+1
+                    else:
+                        if a[j][1] == 'exon':
+                            rect = patches.Rectangle((i,k+0.25), j-i+1, 0.5, edgecolor='black',facecolor='grey')
+                            ax3.add_patch(rect)
+                                
                         else:
-                            #print str(s)+'-'+str(i)  
-                            rect = patches.Rectangle((a[s][0]-0.25,j), i-s+0.5, 0.5, edgecolor='black',facecolor='grey')
-                            ax3.add_patch(rect)          
-                            i=i+1
-                            if i != len(a)-1:
-                                continue
-                if not done:     
-                    #print i 
-                    rect= patches.Rectangle((a[i][0]-0.25,j), 0.5, 0.5, edgecolor='black',facecolor='grey')
-                    ax3.add_patch(rect)                       
-                    i=i+1
-                    if i == len(a)-1:
-                        rect= patches.Rectangle((a[i][0]-0.25,j), 0.5, 0.5, edgecolor='black',facecolor='grey')
-                        ax3.add_patch(rect)
+                            rect = patches.Rectangle((i,k+0.25), j-i+1, 0.5, edgecolor='black',facecolor='white')
+                            ax3.add_patch(rect)
+                        i=j                
+                        break
+                i+=1
             j=j-1
+            k+=1
         
         
         
@@ -127,7 +118,7 @@ class SplicingPlot(Plots):
         ax2 = fig.add_subplot(gs[1])
         #ax2.grid(b=True, which='major')
         
-            
+
         healthyr = range(len(self.mean[0]))
         postLenr = range(len(self.mean[1]))
         MDShighr = range(len(self.mean[2]))
@@ -219,7 +210,7 @@ class SplicingPlot(Plots):
                 mini=min(x)
                 
         
-        plt.ylim((mini-(mini/5)), maxi+(maxi/5))   
+        #plt.ylim((mini-(mini/5)), maxi+(maxi/5))   
         plt.xlim(-1,len(self.values))   
         plt.ylabel('Genexpression in AU')
         plt.xlabel('Probe Set')
@@ -229,15 +220,24 @@ class SplicingPlot(Plots):
         plt.show()       
         
     def setMDSSubtypes(self):
+
         self.drawarray=None
         self.drawarray=[]        
-                
+        print 'grouppos'
+        print self.pos
+        
+        healthyPos = self.pos[0].index('healthy')
+        pre5AzaPos = self.pos[0].index('pre5Aza')
+        post5AzaPos = self.pos[0].index('post5Aza')
+        postLenPos = self.pos[0].index('postLen')
+        preLenPos = self.pos[0].index('preLen')
+            
         for g in range(len(self.pos[0])):
             self.drawarray.append([])
-        
+
         for line in self.values:
             
-            healthy = []
+            healthy=[]
             postLen=[]
             MDShigh=[]
             postAza=[]
@@ -246,24 +246,28 @@ class SplicingPlot(Plots):
             """
             change this !!! first row mds subtypes like healthy second row to last row values for subtypes
             """
-            
+            """
             for g in self.pos[1]:
                 healthy.append(line[g])
             self.drawarray[0].append(healthy)
+            """
+            for g in self.pos[healthyPos+1]:
+                healthy.append(line[g])
+            self.drawarray[0].append(healthy)
             
-            for g in self.pos[2]:
+            for g in self.pos[postLenPos+1]:
                 postLen.append(line[g])
             self.drawarray[1].append(postLen)
             
-            for g in self.pos[3]:
+            for g in self.pos[pre5AzaPos+1]:
                 MDShigh.append(line[g])
             self.drawarray[2].append(MDShigh)
             
-            for g in self.pos[4]:
+            for g in self.pos[post5AzaPos+1]:
                 postAza.append(line[g])
             self.drawarray[3].append(postAza)
             
-            for g in self.pos[5]:
+            for g in self.pos[preLenPos+1]:
                 MDSlow.append(line[g])
             self.drawarray[4].append(MDSlow)
             
@@ -272,6 +276,7 @@ class SplicingPlot(Plots):
             self.MDShigh = MDShigh
             self.postAza = postAza
             self.MDSlow = MDSlow            
+            
             
         return [healthy,postLen,MDShigh,postAza,MDSlow]
           

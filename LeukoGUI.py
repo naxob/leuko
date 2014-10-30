@@ -378,8 +378,8 @@ class MainWindow(wx.Frame):
         mapper2 = File.Mapper('maps\SplicingTranscriptExpressionMapping.csv',':');
         mapper2.extractGroupMapping()
         mapper2.findPositions(titles,mapper2.mapperdict)
-      
-        file3 = File.RefGene('refgene/refGene.tsv','indexfiles/refGene_index.tsv',genecolumn,'\t',1,9,10,7,8,titles,values)
+        
+        file3 = File.RefGene('refgene/refGene.tsv','indexfiles/refGene_index.tsv',genecolumn,'\t',12,9,10,7,8,titles,values)
         file3.extractRefGeneIndexFileEntries()
         file3.extractRefGeneValues()
         file3.calcIntronExon()    

@@ -277,41 +277,73 @@ class RefGene(FileObject):
         
         
     def calcIntronExon(self):
-        #checkIndexFile('test/refGene.tsv')
-        #LOC256021 multiple entries in refgene
-           
+                   
         exon = []
-        intron = []
-        
-        for t in self.refgenestartstoplist:           
+        #intron = []
+        print 'calcintronexon'
+        print self.refgenestartstoplist
+        for t in self.refgenestartstoplist:    
             tempe = []
-            tempi=[]
+            #tempi=[]
             j=0
             for p in self.values:
                 #print 'r '+str(p[expstartpos])+' '+str(p[expstoppos])
                 i = 0            
                 while i < len(t[0]):
+
                     if long(t[0][i]) <= long(p[self.expstartpos]) and  long(p[self.expstoppos]) <= long(t[1][i]):                     
                         #print 'exon refstart ' +str(t[0][i]) +' probestart '+ str(p[14])+' probestop '+str(p[15])  +' refstop '+str(t[1][i])            
-                        tempe.append([j,t[0][i]])
+                        tempe.append([j,'exon',t[0][i]])
+                    
                     
                     elif i < len(t[0])-1: 
                         #print 'intron refstart ' +str(t[1][i]) +' probestart '+ str(p[14])+' probestop '+str(p[15])  +' refstop '+str(t[0][i+1])            
                         if long(t[1][i]) <= long(p[self.expstartpos]) and long(p[self.expstoppos]) <=  long(t[0][i+1]):                        
-                            tempi.append([j,t[1][i]])               
+                            tempe.append([j,'intron',t[1][i]])      
+                            
+                    """ 
+                    if long(t[0][i]) <= long(p[self.expstartpos]) and  long(p[self.expstoppos]) <= long(t[1][i]):                     
+                        #print 'exon refstart ' +str(t[0][i]) +' probestart '+ str(p[14])+' probestop '+str(p[15])  +' refstop '+str(t[1][i])            
+                        tempe.append([j,t[0][i]])
+                    
+                    
+                    elif i < len(t[0])-1: 
+                        #print 'intron refstart ' +str(t[1][i]) +' probestart '+ str(p[14])+' probestop '+str(p[15])  +' refstop '+str(t[0][i+1])            
+                        if long(t[1][i]) <= long(p[self.expstartpos]) and long(p[self.expstoppos]) <=  long(t[0][i+1]):                        
+                            tempi.append([j,t[1][i]])   
+                    """               
+                    
                     i=i+1
+               
+                #exon plot insert
+                    
                 j=j+1
-            exon.append(tempe)
-            intron.append(tempi)
+                
+            print tempe
+            temp = []
+            ex = 0
+            while ex < len(tempe)-1:
+                if int(tempe[ex][0]) == int((tempe[ex+1][0]))-1 and tempe[ex][1] == tempe[ex+1][1] and int(tempe[ex][2]) != int(tempe[ex+1][2]):
+                    #print 'x:'+str(ex)+' insert'
+                    temp.append(tempe[ex])
+                    if tempe[ex][1] == 'intron':
+                        temp.append([-1,'exon',-1])
+                    else:
+                        temp.append([-1,'intron',-1])     
+                    ex+=1                   
+                    continue
+                temp.append(tempe[ex])
+                ex+=1
+            exon.append(temp)
+            #intron.append(tempi)
             
         self.exon = exon
-        self.intron = intron
-        print '\nintrons'
-        print self.intron
-        print 'exons'
-        print self.exon
-    
-        return [exon,intron]
+        #self.intron = intron
+        #print '\nintrons'
+        #print self.intron
+       
+            
+        return exon
     
 class IndexFile(FileObject):
     

@@ -1318,18 +1318,18 @@ if __name__ == '__main__':
     #fileb = '2014/EXON-EXTENDED(65)linear.RMA-EXON-EXTENDED-DABG-Group5log2AddAnnoSort_FINAL2.tsv'
     #SortFile.main(filea,fileb,'str(line.split("\t")[1]),int(line.split("\t")[7]),',128000)
     
-    #filec = '2014All/Edit/AdditionalRefGeneAnnotation/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearGenesSort.tsv'
+    filec = '2014All/Edit/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearAddAnnoFINALSorted_new.tsv'
     
-    #fileb = '2014All/Edit/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearShort.tsv'
+    fileb = '2014All/Edit/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearAddAnnoFINALSorted.tsv'
     #calcLogLinear(filea,fileb,9)
     
-    #SortFile.main(fileb,filec,'str(line.split("\t")[1]),int(line.split("\t")[0])',128000)
-   
+    SortFile.main(fileb,filec,'str(line.split("\t")[1]),int(line.split("\t")[7])',128000)
+    """
     filea = '2014All/Edit/GENE-CORE(65)linear.RMA-GENE-CORE-Group2SortLinear.tsv'
     fileb = '2014All/Edit/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearAddAnnoFINALSorted.tsv'    
     filec = '2014All/Edit/sampleRohdatenEXON-ALL(65)ohneYundControlsQlucoreRMA-EXON-ALL-DABGGroup9LinearAddAnnoFINALSortedSI.tsv' 
     calcSplicingIndex(filea,fileb,filec)
-   
+    """
     #SortFile.main(filea,filec,'str(line.split("\t")[1]),int(line.split("\t")[0])',128000)
 
     
